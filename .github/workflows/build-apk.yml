@@ -26,6 +26,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Verify Flutter
+        run: flutter --version
+
       - name: Create icon if missing
         run: |
           mkdir -p assets/icon
@@ -39,8 +42,10 @@ d.ellipse([200,200,824,824], fill=(21,96,212))
 d.ellipse([350,350,674,674], fill=(13,30,92))
 d.polygon([(512,180),(700,420),(324,420)], fill=(255,255,255))
 img.save('assets/icon/uniloans_icon_1024.png')
-print('icon created')
+print('Icon created successfully')
 "
+          else
+            echo 'Icon already exists'
           fi
         continue-on-error: true
 
@@ -51,8 +56,15 @@ print('icon created')
         run: dart run flutter_launcher_icons
         continue-on-error: true
 
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+
       - name: Build release APK
         run: flutter build apk --release
+
+      - name: List APK files
+        run: find build/app/outputs -name "*.apk" -type f
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -61,5 +73,9 @@ print('icon created')
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
 
-      - name: Show APK size
-        run: ls -lh build/app/outputs/flutter-apk/app-release.apk
+      - name: Build success
+        run: |
+          echo "================================"
+          echo "  UniLoans APK Build Complete!"
+          echo "================================"
+          ls -lh build/app/outputs/flutter-apk/
