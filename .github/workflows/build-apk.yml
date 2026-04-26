@@ -58,7 +58,7 @@ print('icon created')
         uses: actions/upload-artifact@v4
         with:
           name: UniLoans-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
 
       - name: Show APK size
