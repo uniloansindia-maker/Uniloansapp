@@ -2,7 +2,7 @@ name: Build UniLoans APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -26,28 +26,25 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Install Python PIL for icon fallback
+      - name: Install Python Pillow
         run: pip install Pillow
 
       - name: Ensure icon exists
         run: |
           mkdir -p assets/icon
           if [ ! -f assets/icon/uniloans_icon_1024.png ]; then
-            echo "Generating fallback icon..."
             python3 - << 'PYEOF'
 from PIL import Image, ImageDraw
 import os
 os.makedirs('assets/icon', exist_ok=True)
 img = Image.new('RGB', (1024, 1024), color=(13, 30, 92))
 draw = ImageDraw.Draw(img)
-draw.ellipse([212,212,812,812], fill=(21,96,212))
-draw.ellipse([312,312,712,712], fill=(13,30,92))
-draw.polygon([(512,200),(680,400),(344,400)], fill=(255,255,255))
+draw.ellipse([200,200,824,824], fill=(21,96,212))
+draw.ellipse([350,350,674,674], fill=(13,30,92))
+draw.polygon([(512,180),(700,420),(324,420)], fill=(255,255,255))
 img.save('assets/icon/uniloans_icon_1024.png')
-print("Fallback icon created")
+print('Icon created')
 PYEOF
-          else
-            echo "Icon already exists: $(ls -lh assets/icon/uniloans_icon_1024.png)"
           fi
 
       - name: Install dependencies
@@ -56,24 +53,15 @@ PYEOF
       - name: Generate app icon
         run: dart run flutter_launcher_icons
 
-      - name: Analyze code
-        run: flutter analyze --no-fatal-infos
-        continue-on-error: true
-
       - name: Build release APK
         run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: UniLoans-APK-v${{ github.run_number }}
+          name: UniLoans-APK
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
-      - name: APK info
-        run: |
-          echo "========================================="
-          echo "  UniLoans APK Build Complete!"
-          echo "========================================="
-          ls -lh build/app/outputs/flutter-apk/app-release.apk
-          echo "Download from the Artifacts section above"
+      - name: Show APK size
+        run: ls -lh build/app/outputs/flutter-apk/app-release.apk
